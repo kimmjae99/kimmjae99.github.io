@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  내 첫 포스트
-date:  2022-12-10 14:20:00 +0300
+date:   2022-12-10 14:20:00 +0300
 image:  jekyll.jpg
 tags:   Jekyll
 ---
