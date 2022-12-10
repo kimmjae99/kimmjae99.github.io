@@ -1,0 +1,13 @@
+---
+layout: post
+title:  "내 첫 포스트"
+date:  2202-12-10 14:20:00 +0300
+image:  jekyll.jpg
+tags:   Jekyll
+---
+
+첫 블로그 포스트 시험용입니다. 잘 나오네요^^
+
+[jekyll-docs]: https://jekyllrb.com/docs/home
+[jekyll-gh]:   https://github.com/jekyll/jekyll
+[jekyll-talk]: https://talk.jekyllrb.com/
