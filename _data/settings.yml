@@ -1,7 +1,7 @@
 #-------------------------------
 # General Site Settings
 title: 민재의 블로그
-
+# logo: logo.svg # You can add own logo.
 description: 민재의 블로그 입니다.
 
 
