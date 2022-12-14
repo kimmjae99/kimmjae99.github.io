@@ -19,11 +19,17 @@ tags:   Javascript
 
 기계어로 명령을 전달하는 것 : 프로그래밍 언어를 사용해 프로그램을 작성한 후 번역기를 이용하는 것이다. (번역기 : 컴파일러(compiler) 혹은 인터프리터(interpreter)
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/018f4fb4-a6a2-49f9-8338-2ea8ffa33a11/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207586501-b227503c-6bf1-4ec6-86ec-8711fa239d21.png)
+
+
+
+
+
 
 # 1.3 구문과 의미
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/da457d4b-179a-493c-b87b-13edbb0ab611/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207586656-b4683de3-3a38-4aec-b80b-fb576275f993.png)
+
 
 - 문법적으로 문제가 없음
 - 의미적으로 문제가 있음
@@ -100,7 +106,8 @@ Ajax
 - 자바스크립트 웹 브라우저에서 동작하는 유일한 프로그래밍 언어
 - 개발자가 별도의 컴파일 작업을 수행하지 않는 인터프리터 언어
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/66b5cd10-4b22-41a1-8851-b70a0fcad906/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207586843-f97eb094-2327-4764-b76c-06f8cd70ca14.png)
+
 
 - 대부분의 모던 브라우저에서 사용되는 인터프리터는 전통적인 컴파일러 언어처럼 명시적인 컴파일 단계를 거치지는 않지만 복잡한 과정을 거치며 일부 소스코드를 컴파일하고 실행
 
@@ -124,11 +131,13 @@ Ajax
 
 ## 3.2.1 개발자 도구
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8e2773f4-11bc-45da-9020-8f776d8ca67d/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207587105-b0fc5f15-d01b-42ce-a023-e04499eab8e3.png)
+
 
 - 개발자 도구의 기능
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b81cacb6-110b-44d0-b0a6-2c4d3b26ecd4/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207587314-a8d7601e-4ae3-417b-8f6b-fbece6d8283a.png)
+
 
 ## 3.2.2 콘솔
 
@@ -158,7 +167,8 @@ Ajax
 - 애플리케이션은 데이터를 입력받아 처리하고 그 결과를 출력한다.
 - 변수는 프로그래밍 언어에서 데이터를 관리하기 위한 핵심 개념이다.
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b99acff2-0d4f-46c5-8192-54adfcc4f72a/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207587581-0f214d28-90c3-402d-9d9f-33fc908ca38b.png)
+
 
 - 자바스크립트 엔진이 자바스크립트 코드를 계산(평가evaluation)하려면 먼저 10, 20, + 라는 기호(리터럴literal과 연산자operator)의 의미를 알고 있어야 하며 10 + 20 이라는 식(표현식expression)의 의미도 해석(파싱parsing) 할수 있어야 한다.
 
@@ -175,15 +185,15 @@ Ajax
 - 프로그래밍 언어의 컴파일러 또는 인터프리터에 의해 값이 저장된 메모리 공간의 주소로 치환되어 실행된다.
 - 따라서 개발자가 직접 메모리 주소를 통해 값을 저장하고 참조할 필요가 없고 변수를 통해 안전하게 값에 접근할 수 있다.
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/28fd889e-e8a5-43eb-bc2f-fa0b7c403746/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207587695-08d005b9-70d6-4822-83f8-d9861e10d6ef.png)
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/e40317a3-4a93-4033-abe0-abb23b260f87/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207587899-8cd2815a-a7d0-488c-ba6c-fec55266e2b4.png)
 
 - 10 + 20은 연산을 통해 새로운 값 30을 생성한다.
 - 이 새로운 값 30은 메모리 공간에 저장됨
 - 이 30 이라는 값을 디시 읽어들여 재사용할 수 있도록 값이 저장된 메모리 공간에 이름을 붙인 것이 바로 변수이다.
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2cfa67f1-b26a-4f4d-ace0-44eedfdd1b24/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207587978-275f8b92-e04d-4766-b4b7-3ebfb112d60f.png)
 
 변수에 값을 저장하는 것을 할당assignment(대입, 저장)이라 하고, 변수에 저장된 값을 읽어 들이는 것을 참조reference라 한다.
 
@@ -332,8 +342,7 @@ var sum = 10 + 20;
     
     → 리터럴은 값을 생성하기 위해 미리 약속한 표기법이라 할 수 있다.
     
-
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/af21314f-b0a3-452f-bf1e-85f54e53fb9f/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207588332-94e9ece1-cd8b-4594-99a4-f1880957509c.png)
 
 # 5.3 표현식
 
@@ -366,11 +375,13 @@ x + 3; // -> 6
     - 토큰(token) : 문법적인 의미를 가지며 문법적으로 더이상 나눌 수 없는 코드의 기본요소
     - ex) 키워드, 식별자, 연산자, 리터럴, 세미콜론(;), 마침표(.) 등의 특수 기호
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/3c473723-b78b-45b3-97a5-0adc0e000494/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207588563-974754df-ab7a-488c-8416-65317eb10abd.png)
+
 
 - 문은 선언문, 할당문, 조건문, 반복문 등으로 구분할 수 있다.
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/3be47121-2c60-4458-8127-17688e339bf5/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207588714-4321816c-6d4c-403c-aff4-f75d981af913.png)
+
 
 # 5.5 세미콜론과 세미콜론 자동삽입 기능
 
@@ -394,7 +405,7 @@ x = 1 + 2;
 
 - 데이터 타입 = 값의 종류
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/86052159-8535-442d-a690-7b5cf9411dae/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207588933-f6aa314f-6655-47f8-87bb-af4fe73bbcca.png)
 
 # 6.1 숫자타입
 
@@ -475,7 +486,7 @@ console.log(template); // Template literal
 - 일반 문자열 내에서는 줄바꿈이 허용되지 않는다
 - 따라서 일반 문자열 내에서 줄바꿈등의 공백을 표현하려면 백슬래시(\)로 시작하는 이스케이프 시퀀스를 사용해야 한다.
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/52de158a-21b7-41c5-b7f8-6e1aeb9ec2ce/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207589101-1f2d8962-8e59-44b8-aa95-bb4a25ddccc7.png)
 
 ```jsx
 var template = '<ul>\n\t<li><a href="#">Home</a></li>\n</ul>';
@@ -673,7 +684,7 @@ console.log(typeof foo); // function
 - 동적 타입 언어는 유연성은 높지만 신뢰성은 떨어진다.
 - 동적 탕입 언어의 변수를 사용할 때 주의할 사항
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/fdde4b77-e6e9-472e-9ab6-d0bf4caf7f7e/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207589345-bcec2573-82aa-4f21-9345-a8b0d4ad4e75.png)
 
 결론 : 가독성이 좋은 코드가 좋은 코드다.
 
@@ -716,7 +727,7 @@ typeof 'Hi' // ->string
 
 - 이항 산술 연산자는 2개의 피연산자를 산술 연산하여 숫자 값을 만든다.
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/137f4e95-f637-4f7e-ba27-e0c1b82063df/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207589480-8b51152a-b3a1-4aa9-874b-88b7d4f0af92.png)
 
 ```jsx
 5 + 2; // 7
@@ -730,7 +741,7 @@ typeof 'Hi' // ->string
 
 - 단항 산술 연산자는 1개의 피연산자를 산술 연산하여 숫자 값을 만든다.
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d7a3f444-d247-41cc-a01d-e87199d73747/Untitled.png)
+![Untitled](https://user-images.githubusercontent.com/75876669/207589596-0af0b937-f068-4139-b405-68bfa0d02192.png)
 
 ```jsx
 var x = 1;
