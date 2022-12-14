@@ -1,0 +1,689 @@
+---
+layout: post
+title:  모던자바스크립트 Deep Dive 19장
+date:   2022-07-26 10:00:00 +0300
+image:  Javascript.jpg
+tags:   Javascript
+---
+
+# 19장 프로토타입
+
+---
+
+- 자바스크립트는 객체기반의 프로그래밍 언어이며 **자바스크립트를 이루고 있는 거의 “모든 것”이 객체**다
+- 원시 타입의 값을 제외한 나머지 값들(함수, 배열, 정규표현식 등)은 모두 객체다
+
+# 19.1 객체지향 프로그래밍
+
+- 실체는 특징이나 성질을 나타내는 속성을 가지고 있고 이를 통해 실체를 인식하거나 구별할 수 있다
+- 프로그램에 필요한 속성만 간추려 내어 표현하는 것을 추상화라 한다.
+
+```jsx
+// 이름과 주소 속성을 갖는 객체
+const person = {
+  name: 'Lee',
+  address: 'Seoul'
+};
+
+console.log(person); // {name: "Lee", address: "Seoul"}
+```
+
+- 프로그래머(subject, 주체)는 이름과 주소 속성으로 표현된 객체(object)인 person을 다른 객체와 구별하여 인식할 수 있다
+- 객체 : 속성을 통해 여러 개의 값을 하나의 단위로 구성한 복합적인 자료구조
+
+ex) 원
+
+- 반지름 이라는 속성을 있고 이 반지름을 가지고 원의 지름, 둘레 넓이를 구할 수 있다
+- 반지름 : 상태를 나타내는 데이터
+- 원의 지름, 둘레, 넓이를 구하는 것 → 동작
+
+```jsx
+const circle = {
+  // property
+  radius: 5, // 반지름
+
+  // method
+  // 원의 지름: 2r
+  getDiameter() {
+    return 2 * this.radius;
+  },
+
+  // method
+  // 원의 둘레: 2πr
+  getPerimeter() {
+    return 2 * Math.PI * this.radius;
+  },
+
+  // method
+  // 원의 넓이: πrr
+  getArea() {
+    return Math.PI * this.radius ** 2;
+  }
+};
+
+console.log(circle);
+// {radius: 5, getDiameter: f, getPerimeter: f, getArea: f}
+
+console.log(circle.getDiameter());  // 10
+console.log(circle.getPerimeter()); // 31
+console.log(circle.getArea());      // 78
+```
+
+- 객체의 상태를 나타내는 데이터와 상태 데이터를 조작할 수 있는 동작을 하나의 논리적인 단위로 묶어 생각한다.
+    
+    → 객체 : 상태 데이터와 동작을 하나의 논리적인 단위로 묶은 복합적인 자료구조
+    
+    → 객체의 상태 데이터 : property(프로퍼티)
+    
+    → 객체의 동작 : method(메서드)
+    
+- 각 객체는 독립적인 부품으로 볼 수 있지만 다른 객체와 관계성을 가질 수 있다
+- 다른 객체와 메시지를 주고받거나 데이터를 처리할 수도 있다.
+- 객체의 상태 데이터나 동작을 상속받아 사용하기도 한다.
+
+# 19.2 상속과 프로토 타입
+
+- 상속 : 어떤 객체의 프로퍼티 또는 메서드를 다른 객체가 상속받아 그대로 사용할 수 있는 것
+- 프로토타입을 기반으로 상속을 구현하여 불필요한 중복을 제거한다.
+- 중복을 제거하는 방법 : 기존의 코드를 적극적으로 재사용하는 것
+
+```jsx
+/ 생성자 함수
+function Circle(radius) {
+  this.radius = radius;
+  this.getArea = function () {
+    // Math.PI는 원주율을 나타내는 상수다. πrr
+    return Math.PI * this.radius ** 2;
+  };
+}
+
+// 반지름이 1인 인스턴스 생성
+const circle1 = new Circle(1);
+// 반지름이 2인 인스턴스 생성
+const circle2 = new Circle(2);
+
+onsole.log(circle1.getArea === circle2.getArea); // false
+
+console.log(circle1.getArea()); // 3.141592
+console.log(circle2.getArea()); // 12.5
+```
+
+- 생성자 함수는 동일한 프로퍼티(메서드 포함) 구조를 갖는 객체를 여러 개 생성할 때 유용
+- 위의 같은 경우 인스턴스를 생성할 때마다 getArea 메서드를 중복 생성하고 모든 인스턴스가 중복 소유한다.
+    
+    → 메모리를 불필요하게 낭비
+    
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207598410-ddead434-00dc-4b82-9966-edb06b7452b2.png)
+
+- 하지만 getArea 메서드는 모든 인스턴스가 동일한 내용의 메서드를 사용하므로 하나만 생성하여 공유해서 사용하는 것이 바람직하다.
+
+- 상습을 통해 불필요한 중복을 제거 → **자바스크립트는 프로토타입을 기반으로 상속을 구현**
+
+```jsx
+// 생성자 함수
+function Circle(radius) {
+  this.radius = radius;
+}
+
+// Circle 생성자 함수가 생성한 모든 인스턴스가 getArea 메서드를
+// 공유해서 사용할 수 있도록 프로토타입에 추가한다.
+// 프로토타입은 Circle 생성자 함수의 prototype 프로퍼티에 바인딩되어 있다.
+Circle.prototype.getArea = function () {
+  return Math.PI * this.radius ** 2;
+};
+
+// 인스턴스 생성
+const circle1 = new Circle(1);
+const circle2 = new Circle(2);
+
+// Circle 생성자 함수가 생성한 모든 인스턴스는 부모 객체의 역할을 하는
+// 프로토타입 Circle.prototype으로부터 getArea 메서드를 상속받는다.
+// 즉, Circle 생성자 함수가 생성하는 모든 인스턴스는 하나의 getArea 메서드를 공유한다.
+console.log(circle1.getArea === circle2.getArea); // true
+
+console.log(circle1.getArea()); // 3.141592
+console.log(circle2.getArea()); // 12.5
+```
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207598491-2509ac65-adb8-4d85-a53d-a9cf5e50bc81.png)
+
+- Circle 생성자 함수가 생성한 모든 인스턴스는 자신의 프로토타입(상위(부모)객체 역할을 하는) Circle.prototype의 모든 프로퍼티와 메서드를 상속받는다
+
+# 19.3 프로토타입 객체
+
+- 객체지향 프로그래밍의 근간을 이루는 객체간 상속을 구현하기 위해 사용된다.
+- 프로토타입은 상위 객체의 역할을 하는 객체로서 다른 객체에 공유 프로퍼티(메서드 포함)를 제공한다.
+- 모든 객체는[[Prototype]]이라는 내부 슬롯을 가지며, 이 내부 슬롯의 값은 프로토타입의 참조다.
+- [[Prototype]]에 저장되는 프로토타입은 객체 생성 방식에 의해 결정 된다
+
+→ 객체가 생성될 때 객체 생성 방식에 따라 프로토타입이 결정되고 [[Prototype]]에 저장된다
+
+- 모든 객체는 하나의 프로토타입을 갖는다
+- 모든 프로토타입은 생성자 함수와 연결되어 있다
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207598555-9c548049-8a15-4325-ae76-964a45ed16c9.png)
+
+- [[Prototype]]내부 슬롯에는 직접 접근할 수 없지만 __ proto __ 접근자 프로퍼티를 통해 자신의 프로토타입(자신의 [[Prototype]] 내부 슬롯이 가리키는 프로토타입)에 간접적으로 접근할 수 있다
+- 프로토타입은 자신의 constructor 프로퍼티를 통해 생성자 함수에 접근할 수 있고, 생성자 함수는 protityoe프로퍼티를 통해 프로토 타입에 접근할 수 있다
+
+## 19.3.1__ proto __ 접근자 프로퍼티
+
+- 모든 객체는 __ proto __ 접근자 프로퍼티를 통해 자신의 프로토타입, 즉 [[Prototype]] 내부 슬롯에 간접적으로 접근할 수 있다
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207598626-a903e087-3eaf-4cdc-a1ce-6e22be5e9850.png)
+
+- __ proto __ 접근자 프로퍼티를 통해 person 객체의 [[Prototype]] 내부 슬롯이 가리키는 객체인 Object.prototype에 접근한 결과를 표시한 것
+
+- __ proto __는 접근자 프로퍼티다
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207598746-3505f91e-76fc-4097-8478-602e4f4a40a6.png)
+
+- 접근자 함수 ([[Get]], [[Set]])를 통해 [[Prototype]] 내부 슬롯의 값, 즉 프로토타입을 취득하거나 할당한다
+- __ proto __ 접근자 프로퍼티를 통해 프로토타입에 접근하면 내부적으로 __ proto __ 접근자 프로퍼티 [[Get]]이 호출된다
+- __ proto __ 접근자 프로퍼티를 통해 프로토타입을 할당하면 __ proto __접근자 프로퍼티인 [[Set]]이 호출된다
+
+```jsx
+const obj = {};
+const parent = { x: 1 };
+
+// getter 함수인 get __proto__가 호출되어 obj 객체의 프로토타입을 취득
+obj.__proto__;
+// setter함수인 set __proto__가 호출되어 obj 객체의 프로토타입을 교체
+obj.__proto__ = parent;
+
+console.log(obj.x); // 1
+-> obj는 parent라는 상위 객체를 갖게 되는 것
+```
+
+- __ proto __ 접근자 프로퍼티는 상속을 통해 사용된다
+- __ proto __ 접근자 프로퍼티는 객체가 직접 소유하는 프로퍼티가 아니라 Object.prototype의 프로퍼티다
+- 모든 객체는 상속을 통해 Obejct.prototype.__ proto __접근자 프로퍼티를 사용할 수 있다
+
+```jsx
+const person = { name: 'Lee' };
+
+// person 객체는 __proto__ 프로퍼티를 소유하지 않는다.
+console.log(person.hasOwnProperty('__proto__')); // false
+
+// __proto__ 프로퍼티는 모든 객체의 프로토타입 객체인 Object.prototype의 접근자 프로퍼티다.
+console.log(Object.getOwnPropertyDescriptor(Object.prototype, '__proto__'));
+// {get: ƒ, set: ƒ, enumerable: false, configurable: true}
+
+// 모든 객체는 Object.prototype의 접근자 프로퍼티 __proto__를 상속받아 사용할 수 있다.
+console.log({}.__proto__ === Object.prototype); // true
+```
+
+- __ proto __ 접근자 프로퍼티르 통해 프로토타입에 접근하는 이유
+    
+    → 상호 참조에 의해 프로토타입 체인이 생성되는 것을 방지하기 위해서다
+    
+
+```jsx
+const parent = {};
+const child = {};
+
+// child의 프로토타입을 parent로 설정
+child.__proto__ = parent;
+// parent의 프로토타입을 child로 설정
+parent.__proto__ = child; // TypeError
+```
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207598836-f1e026d5-c298-4d47-8216-7860522df34a.png)
+
+- 프로토타입 체인은 단방향 링크드 리스트로 구현되어야 한다
+    
+    → 프로퍼티 검색 방향이 한쪽 방향으로만 흘러가야 한다
+    
+- 위의 경우로 하면 프로토타입 체인 종점이 존재하지 않기 때문에 프로토타입 체인에서 프로퍼티를 검색할 때 무한 루프에 빠진다
+
+→ 따라서 무조건적으로 프로토타입을 교체할 수 없도록 __ proto __ 접근자 프로퍼티를 통해 프로토타입에 접근하고 교체하도록 구현되어있다
+
+- __ proto __ 접근자 프로퍼티를 코드 내에서 직접 사용하는 것은 권장되지 않는다
+
+→ 모든 객체가 __ proto __ 접근자 프로퍼티를 사용할 수 있는 것은 아니기 때문이다
+
+- 직접 상속을 통해 Object.prototype을 상속받지 않는 객체를 생성할 수도 있기 때문에 __ proto __ 접근자 프로퍼티를 사용할 수 없는 경우가 있다
+
+```jsx
+// obj는 프로토타입 체인의 종점이다. 따라서 Object.__proto__를 상속받을 수 없다.
+const obj = Object.create(null);
+
+// obj는 Object.__proto__를 상속받을 수 없다.
+console.log(obj.__proto__); // undefined
+
+// 따라서 Object.getPrototypeOf 메서드를 사용하는 편이 좋다.
+console.log(Object.getPrototypeOf(obj)); // null
+```
+
+- __ proto __ 접근자 프로퍼티 대신 프로토타입의 참조를 취득하고 싶은 경우에는 Object,getPrototypeOf 메서드를 사용할 것을 권장
+- 프로토타입을 교체하고 싶은 경우에는 Object.setPrototypeOf 메서드를 사용할 것을 권장
+
+```jsx
+const obj = {};
+const parent = { x: 1 };
+
+// obj 객체의 프로토타입을 취득
+Object.getPrototypeOf(obj); // obj.__proto__;
+// obj 객체의 프로토타입을 교체
+Object.setPrototypeOf(obj, parent); // obj.__proto__ = parent;
+
+console.log(obj.x); // 1
+```
+
+## 19.3.2 함수 객체의 prototype 프로퍼티
+
+- 함수 객체만이 소유하는 prototype 프로퍼티는 생성자 함수가 생성할 인스턴스의 프로토타입을 가리킨다
+
+```jsx
+// 함수 객체는 prototype 프로퍼티를 소유한다.
+(function () {}).hasOwnProperty('prototype'); // -> true
+
+// 일반 객체는 prototype 프로퍼티를 소유하지 않는다.
+({}).hasOwnProperty('prototype'); // -> false
+```
+
+- prototype 프로퍼티는 생성자 함수가 생성할 객체의 프로토 타입을 가리킨다.
+- 따라서 생성자 함수로서 호출할 수 없는 함수(non-constructor(화살표함수, ES6 메서드 축약 표현))로 정의한 메서드는 prototype 프로퍼티를 소유하지 않으며 프로토타입을 생성하지 않는다
+
+```jsx
+const Person = name => {
+  this.name = name;
+};
+
+console.log(Person.hasOwnProperty('prototype')); // false
+
+console.log(Person.prototype); // undefined
+
+const obj = {
+  foo() {}
+};
+
+console.log(obj.foo.hasOwnProperty('prototype')); // false
+
+console.log(obj.foo.prototype); // undefined
+```
+
+- **모든 객체가 가지고 있는(엄밀히 말하면 Object.prototype으로부터 상속받은) __proto__접근자 프로퍼티와 함수 객체만이 가지고 있는 prototype프로퍼티는 결국 동일한 프로토타입을 가리킨다.**
+- 하지만 이들 프로퍼티를 사용하는 주체가 다르다
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207598958-8d32c442-98cf-406a-89a0-199f7999a3a8.png)
+
+```jsx
+// 생성자 함수
+function Person(name) {
+  this.name = name;
+}
+
+const me = new Person('Lee');
+
+// 결국 Person.prototype과 me.__proto__는 결국 동일한 프로토타입을 가리킨다.
+console.log(Person.prototype === me.__proto__);  // true
+```
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207599052-c8233ee2-65f2-4183-92a1-0b6ff4ad8bbb.png)
+
+## 19.3.3 프로토타입의 constructor 프로퍼티와 생성자 함수
+
+- 모든 프로토타입은 constructor 프로퍼티를 갖는다
+- 이 constructor 프로퍼티는 prototype 프로퍼티로 자신을 참조하고 있는 생성자 함수를 가리킨다.
+- 이 연결은 생성자 함수가 생성될때, 즉 함수 객체가 생성될때 이루어진다,
+
+```jsx
+// 생성자 함수
+function Person(name) {
+  this.name = name;
+}
+
+const me = new Person('Lee');
+
+// me 객체의 생성자 함수는 Person이다.
+console.log(me.constructor === Person);  // true
+
+```
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207599185-951aaf88-2681-4c84-81b7-756330f255fd.png)
+
+- me 객체는 프로토타입인 Person.prototype의 constructor 프로퍼티를 상속받아 사용할 수 있다
+
+# 19.4 리터럴 표기법에 의해 생성된 객체의 생성자 함수와 프로토타입
+
+```jsx
+//obj 객체를 생성한 생성자 함수는 Object다.
+const obj = new Object();
+console.log(obj.constructor === Object); // true
+
+//add 함수 객체를 생성한 생성자 함수는 Function이다
+const add = new Function('a', 'b', 'return a + b');
+console.log(add.constructor === Function); //true
+
+//생성자 함수
+function Person(name) {
+	this.name = name;
+}
+
+// me 객체를 생성한 생성자 함수는 Person이다.
+const me = new Person('Lee');
+console.log(me.constructor === Person); // true
+```
+
+- new 연산자와 함께 생성자 함수를 호출하여 인스턴스를 생성하지 않고 리터럴 표기법에 의한 객체 생성 방식이 있다
+
+```jsx
+// 객체 리터럴
+const obj = {};
+
+// 함수 리터럴
+const add = function (a, b) { return a + b; };
+
+// 배열 리터럴
+const arr = [1, 2, 3];
+
+// 정규표현식 리터럴
+const regexp = /is/ig;
+```
+
+- 리터럴 표기법에 의해 생성된 객체도 프로토타입이 존재한다
+- 하지만 리터럴 표기법에 의해 생성된 객체의 경우 프로토타입의 constructor 프로퍼티가 가리키는 생성자 함수가 반드시 객체를 생성한 생성자 함수라고 단정할 수는 없다
+
+```jsx
+// obj 객체는 Object 생성자 함수로 생성한 객체가 아니라 객체 리터럴로 생성했다.
+const obj = {};
+
+// 하지만 obj 객체의 생성자 함수는 Object 생성자 함수다.
+console.log(obj.constructor === Object); // true
+```
+
+- obj 객체는 Object 생성자 함수와 constructor 프로퍼티로 연결되어 있다
+
+- Object 생성자 함수
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207599267-30f19963-3ebd-44ff-85e2-d1a76c5e7cfc.png)
+
+- 2를 보면 Object 생성자 함수에 인수를 전달하지 않거나 undefined 또는 null을 인수로 전달하면서 호출하면 내부적으로는 추상연산 OrdinaryObjectCreate를 호출하여 Object.prototype을 프로토타입으로 갖는 빈 객체를 생성한다.
+
+- 추상연산 : 내부동작의 구현 알고리즘을 표현한 것
+
+```jsx
+// 1. new.target이 undefined나 Object가 아닌 경우
+// 인스턴스 -> Foo.prototype -> Object.prototype 순으로 프로토타입 체인이 생성된다.
+class Foo extends Object {}
+new Foo(); // Foo {}
+
+// 2. Object 생성자 함수에 의한 객체 생성
+// 인수가 전달되지 않았을 때 추상 연산 OrdinaryObjectCreate를 호출하여 빈 객체를 생성한다.
+let obj = new Object();
+console.log(obj); // {}
+
+// 3. 인수가 전달된 경우에는 인수를 객체로 변환한다.
+// Number 객체 생성
+obj = new Object(123);
+console.log(obj); // Number {123}
+
+// String  객체 생성
+obj = new Object('123');
+console.log(obj); // String {"123"}
+```
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207599330-1d9491fa-41fa-4b11-ae86-73cf3ac46255.png)
+
+- Object 생성자 함수 호출과 객체 리터럴 평가는 추상 연산 OrdinaryObjectCreate를 호출하여 빈 객체를 생성하는 점에서 동일하지만
+- new.target의 확인이나 프로퍼티를 추가하는 처리 등 세부내용은 다르다
+
+- 함수객체의 경우
+- Function 생성자 함수를 호출하여 생성한 함수는 렉시컬 스코프를 만들지 않고 전역 함수인 것처럼 스코프를 생성하며 클로저도 만들지 않는다
+
+→ 함수 선언문과 함수 표현식을 평가하여 함수 객체를 생성한 것은 Function 생성자 함수가 아니다
+
+```jsx
+// foo 함수는 Function 생성자 함수로 생성한 함수 객체가 아니라 함수 선언문으로 생성했다.
+function foo() {}
+
+console.log(foo.constructor === Function); // true
+```
+
+- 하지만 constructor 프로퍼티를 통해 확인해보면 foo 함수의 생성자 함수는 Function 생성자 함수다
+
+- 리터럴 표기법에 의해 생성된 객체도 상속을 위해 프로토타입이 필요하다
+
+→ 리터럴 표기법에 의해 생성된 객체도 가상적인 생성자 함수를 갖는다
+
+- 프로토타입은 생성자 함수와 더불어 생성되며 prototype, constructor 프로퍼터에 의해 연결되기 때문이다
+    
+    **→ 프로토타입과 생성자 함수는 단독으로 존재할 수 없고 언제나 쌍으로 존재한다**
+    
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207599415-e35fb1e9-f73e-4fcb-902c-ee0f249ca9db.png)
+
+# 19.5 프로토타입의 생성 시점
+
+- **프로토타입은 생성자 함수가 생성되는 시점에 더불어 생성된다**
+- 생성자 함수
+    - 사용자 정의 생성자 함수 : 사용자가 직접 정의한 함수
+    - 빌트인 생성자 함수 : 자바스크립트가 기본 제공하는 함수
+
+## 19.5.1 사용자 정의 생성자 함수와 프로토타입 생성 시점
+
+- **생성자 함수로서 호출할 수 있는 함수, 즉 constructor는 함수 정의가 평가되어 함수 객체를 생성하는 시점에 프로토타입도 더불어 생성된다**
+
+```jsx
+// 호이스팅으로 선언문에 도달하기 전에 함수 객체가 생성된다.
+// 함수 정의(constructor)가 평가되어 함수 객체를 생성하는 시점에 프로토타입도 더불어 생성된다.
+console.log(Person.prototype); // {constructor: f}
+
+// 생성자 함수
+function Person(name) {
+  this.name = name;
+}
+```
+
+- 생성자 함수로서 호출할 수 없는 함수, 즉 non-constructor는 프로토타입이 생성되지 않는다
+
+```jsx
+// 화살표 함수는 non-constructor다.
+const Person = name => {
+	this.name = name;
+};
+
+// non-constructor는 프로토타입이 생성되지 않는다
+console.log(Person.prototype_; // undefined
+```
+
+ 
+
+- 함수 선언문은 런타임 이전에 자바스크립트 엔진에 의해 먼저 실행된다
+- 따라서 함수 선언문으로 정의된 Person 생성자 함수는 어떤 코드보다 먼저 평가되어 함수 객체가 된다. 이때 프로토타입도 더불어 생성된다
+- 생성된 프로토타입은 Person 생성자 함수의 prototype 프로퍼티에 바인딩 된다.
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207599527-aeaa727b-53d4-44b4-80a7-c3c2808a91de.png)
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207599669-dba41db6-1275-438f-911e-20efbe8931a5.png)
+
+- 사용자 정의 생성자 함수는 자신이 평가되어 함수 객체로 생성되는 시점에 프로토타입도 생성되며, 생성된 프로토타입의 프로토타입은 언제나 Object.prototype이다
+
+## 19.5.2 빌트인 생성자 함수와 프로토타입 생성 시점
+
+- 빌트인 생성자 함수(Object, String, Number, Function, Array, RegExp, Date, Promise)도 일반 함수와 마찬가지로 빌트인 생성자가 생성되는 시점에 프로토타입이 생성된다
+- 모든 빌트인 생성자 함수는 전역 객체가 생성되는 시점에 생성된다
+- 생성된 프로토타입은 빌트인 생성자 함수의 prototype 프로퍼티에 바인딩된다
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207599764-ceca0daa-01c1-4eba-a056-d8a58e58a70a.png)
+
+- 전역 객체 : 코드가 실행되기 이전 단계에 자바스크립트 엔진에 의해 생성되는 특수한 객체
+
+- 객체가 생성되기 이전에 생성자 함수와 프로토타입은 이미 객체화되어 존재한다
+- 이후 생성자 함수 또는 리터럴 표기법으로 객체를 생성하면 프로토타입은 생성된 객체의 [[Prototype]] 내부 슬롯에 할당된다.
+- 이로써 생성된 객체는 프로토타입을 상속받는다
+
+# 객체 생성 방식과 프로토타입의 결정
+
+- 객체의 생성방법
+    - 객체 리터럴
+    - Object 생성자 함수
+    - 생성자 함수
+    - Object.create 메서드
+    - 클래스(ES6)
+
+→ 공통점 : 추상 연산 OrdinaryObjectCreate에 의해 생성된다
+
+- 추상 연산 OrdinaryObjectCreate는 필수적으로 자신이 생성할 객체의 프로토타입을 인수로 전달받는다. 그리고 자신이 생성할 객체에 추가할 프로퍼티 목록을 옵션으로 전달할 수 있다
+- 추상 연산 OrdinaryObjectCreate는 빈 객체를 생성한 후, 객체에 추가할 프로퍼티 목록이 인수로 전달된 후 객체를 추가한다.
+- 그리고 인수로 받은 프로토타입을 자신이 생성한 객체의 [[Prototype]] 내부 슬롯에 할당한 다음, 생성한 객체를 반환한다.
+- 프로토타입은 추상연산 OrdinaryObjectCreate에 전달되는 인수에 의해 결정된다
+    
+    → 이 인수는 객체가 생성되는 시점에 객체 생성 방식에 의해 결정된다
+    
+
+## 19.6.1 객체 리터럴에 의해 생성된 객체의 프로토타입
+
+- 자바스크립트 엔진은 객체 리터럴을 평가하여 객체를 생성할 때 추상 연산 OrdinaryObjectCreate를 호출한다.
+- 추상연산 OrdinaryObjectCreate에 전달되는 프로토타입은 Object.prototype이다
+
+```jsx
+const obj = { x: 1 };
+```
+
+- 위 객체 리터럴이 평가되면 추상연산 OrdinaryObjectCreate에 의해 Object 생성자 함수와 Object.prototype과 생성된 객체 사이에 연결이 만들어진다
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207599849-42c73b38-6c89-4a1b-a20b-4bb884cba242.png)
+
+- 객체리터럴에 의해 생성된 obj객체는 Object.prototype을 프로토타입으로 갖게 되며 Object.prototype을 상속 받는다
+
+```jsx
+const obj = { x: 1 };
+
+// 객체 리터럴에 의해 생성된 obj 객체는 Object.prototype을 상속받는다.
+console.log(obj.constructor === Object); // true
+console.log(obj.hasOwnProperty('x'));    // true
+```
+
+## 19.6.2 Object 생성자 함수에 의해 생성된 객체의 프로토타입
+
+- Object 생성자 함수를 인수 없이 호출하면 빈 객체가 생성된다
+- Object 생성자 함수를 호출하면 추상연산 OrdinaryObjectCreate가 호출된다.
+- 이때 추상연산 OrdinaryObjectCreate에 전달되는 프로토 타입은 Object.prototype이다
+
+```jsx
+const obj = new Object();
+obj.x = 1;
+```
+
+- 위 코드가 실행되면 추상연산 OrdinaryObjectCreate에 의해 Object 생성자 함수와 Object.prototype과 생성된 객체 사이에 연결이 만들어진다
+- 객체리터럴에 의해 생성된 객체와 동일한 구조
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207599926-3b778ee6-b7af-4ade-acc7-d8a8a2798c61.png)
+
+- Object 생성자 함수에 의해 생성된 obj객체는 Object.prototype을 프로토타입으로 갖게 되며 Object.prototype을 상속 받는다
+
+```jsx
+const obj = new Object();
+obj.x = 1;
+
+// Object 생성자 함수에 의해 생성된 obj 객체는 Object.prototype을 상속받는다.
+console.log(obj.constructor === Object); // true
+console.log(obj.hasOwnProperty('x'));    // true
+```
+
+- 객체리터럴과 Object 생성자 함수에 의한 객체 생성 방식의 차이는 프로퍼티를 추가하는 방식에 있다
+- 객체 리터럴 방식은 객체 리터럴 내부에 프로퍼티를 추가하지만
+- Object 생성자 함수 방식은 일단 빈 객체를 생성한 이후 프로퍼티를 추가해야한다.
+
+## 19.6.3 생성자 함수에 의해 생성된 객체의 프로토타입
+
+- new연산자와 함께 생성자 함수를 호출하면 추상연산 OrdinaryObjectCreate가 호출된다.
+- 이때 추상연산 OrdinaryObjectCreate에 전달되는 프로토 타입은 Object.prototype이다
+
+```jsx
+function Person(name) {
+  this.name = name;
+}
+
+const me = new Person('Lee');
+```
+
+- 위 코드가 실행되면 추상연산 OrdinaryObjectCreate에 의해 생성자 함수와 생성자 함수의 prototype 프로퍼티에 바인딩되어 있는 객체와 생성된 객체 사이에 연결이 만들어진다
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207600003-7021f035-cdea-49e8-a550-0f79abfa991d.png)
+
+- 표준 빌트인 객체인 Object 생성자 함수와 더불어 생성된 프로토타입은 다양한 빌트인 메서드를 갖고 있다
+- 하지만 사용자 정의 생성자 함수 Person과 더불어 생서된 프로토타입 Person.prototype의 프로퍼티는 constructor뿐이다.
+
+- 프로토타입 Person.prototype에 프로퍼틸을 추가하여 하위 객체가 상속받을 수 있도록 구현
+
+```jsx
+function Person(name) {
+	this.name = name;
+}
+
+//프로토타입 메서드
+Person.prototype.sayHello = function () {
+	console.log(`Hi! My name is ${this.name}`);
+};
+
+const me = new Person('Lee');
+const you = new Person('Kim');
+
+me.sayHello(); // Hi! My name is Lee
+you.sayHello(); // Hi! My name is **Kim**
+```
+
+- 프로토타입에 추가/삭제된 프로퍼티는 프로토타입 체인에 즉각 반영된다
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207600099-237ed8eb-aa9d-4b8a-bced-42fdca19116e.png)
+
+# 19.7 프로토타입 체인
+
+```jsx
+function Person(name) {
+  this.name = name;
+}
+
+// 프로토타입 메서드
+Person.prototype.sayHello = function () {
+  console.log(`Hi! My name is ${this.name}`);
+};
+
+const me = new Person('Lee');
+
+// hasOwnProperty는 Object.prototype의 메서드다.
+console.log(me.hasOwnProperty('name')); // true
+```
+
+- Person 생성자 함수에 의해 생성된 me 객체는 Object.prototype의 메서드인 hasOwnProperty를 호출할 수 있다
+    
+    → me 객체가 Person.prototype뿐만 아니라 Object.prototype도 상속받았다는 것을 의미한다
+    
+
+```jsx
+Objecyt.getPrototypeOf(me) === Person.prototype; // -> true
+```
+
+```jsx
+Object.getPrototypeOf(Person.prototype) === Object.prototype; // -> true
+```
+
+![Untitled](https://user-images.githubusercontent.com/75876669/207600176-1f62a2ee-327d-4bbf-8fa4-ea1e34ad092c.png)
+
+- 프로토타입 체인 : 객체의 프로퍼티(메서드 포함)에 접근하려고 할 때 해당 객체에 접근하려는 프로퍼티가 없다면 [[Prototype]] 내부 슬롯의 참조를 따라 자신의 부모 역할을 하는 프로토타입의 프로퍼티를 순차적으로 검색하는 것
+- 프로토타입 체인 : 자바스크립트가 객체지향 프로그래밍의 상속을 구현하는 매커니즘
+
+```jsx
+Object.prototype.hasOwnProperty.call(me, 'name');
+```
+
+- call 메서드
+- this로 사용할 객체를 전달하면서 함수를 호출한다.
+
+- 프로토타입 체인은 상속과 프로퍼티 검색을 위한 메커니즘이다
+- 식별자의 경우 → 스코프 체인
+- 스코프 체인은 식별자 검색을 위한 메커니즘이다
+
+```jsx
+me.hasOwnProperty('name');
+```
+
+- 먼저 스코프 체인에서 me 식별자를 검색한다
+- me 식별자는 전역에서 선언되었으므로 전역 스코프에서 검색된다
+- me 식별자를 검색한 후 me 객체의 프로토타입 체인에서 hasOwnProperty 메서드를 검색한다
+
+**→ 스코프체인과 프로토타입 체인은 서로 연관없이 별도로 동작하는 것이 아니라 서로 협력하여 식별자와 프로퍼티를 검색하는 데 사용된다**
