@@ -9,7 +9,7 @@ description: 민재의 블로그 입니다.
 # Author Settings
 author:
   name: 김민재
-  image: 01.jpg
+  image: profile.jpg
   say-hello: Hello, My name is <strong>김민재</strong>
   bio: 저는 <strong>web front-end</strong>에 대해 관심이 많은 학생입니다. 비록 지금은 배우는 단계에 있지만 나중에는 <strong>프론트엔드 개발자</strong>가 되고자 합니다.
 
