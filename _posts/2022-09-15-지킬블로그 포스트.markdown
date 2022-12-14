@@ -1,12 +1,10 @@
 ---
 layout: post
-title:  내 첫 포스트
+title:  지킬블로그 포스트
 date:   2022-09-15 12:20:00 +0300
 image:  jekyll.jpg
 tags:   Jekyll
 ---
-
-첫 블로그 포스트 시험용입니다. 잘 나오네요^^ 
 
 먼저 이 블로그를 만들기 위해 jekyll테마를 보고 있던 와중에 이 artemsheludko이 만든 Zolan이라는 jekyll블로그를 보게 되었는데 테마가 깔끔하고 포스트 형식으로 글을 쓰고 표현하기에는 적합하다고 생각이 들어서 이 테마를 쓰게 되었습니다.
 
